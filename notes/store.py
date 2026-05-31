@@ -44,9 +44,15 @@ class NotesStore:
         data = [note.to_dict() for note in notes]
         tmp = self.filepath.with_suffix(".json.tmp")
         self.filepath.parent.mkdir(parents=True, exist_ok=True)
-        with open(tmp, "w") as f:
-            json.dump(data, f, indent=2)
-        os.replace(tmp, self.filepath)
+        try:
+            with open(tmp, "w") as f:
+                json.dump(data, f, indent=2)
+            os.replace(tmp, self.filepath)
+        finally:
+            try:
+                tmp.unlink(missing_ok=True)
+            except OSError:
+                pass
 
     def add(self, note: Note) -> Note:
         notes = self._load()

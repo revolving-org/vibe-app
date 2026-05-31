@@ -86,5 +86,22 @@ def run_with_store(store: NotesStore):
         _handle_search(store, args)
 
 
+def _handle_show(store: NotesStore, args):
+    try:
+        note = store.get(args.id)
+    except OSError as e:
+        print(f"Error reading notes file: {e}", file=sys.stderr)
+        sys.exit(2)
+    if note is None:
+        print(f"Note '{args.id}' not found.", file=sys.stderr)
+        sys.exit(1)
+    print(f"  ID:        {note.id}")
+    print(f"  Title:     {note.title}")
+    print(f"  Created:   {note.created_at}")
+    print(f"  Updated:   {note.updated_at}")
+    print()
+    print(f"  {note.body}")
+
+
 if __name__ == "__main__":
     main()

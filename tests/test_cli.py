@@ -137,3 +137,42 @@ class TestCLIList(unittest.TestCase):
         self.assertNotIn("Body one", out)
         # Newest first: n2 was added after n1, so n2 should appear before n1
         self.assertLess(out.index(n2.id), out.index(n1.id))
+
+
+class TestCLIShow(unittest.TestCase):
+    def setUp(self):
+        import tempfile
+        self.tmp = tempfile.mkdtemp()
+        self.filepath = Path(self.tmp) / "notes.json"
+        self.store = NotesStore(filepath=self.filepath)
+
+    def tearDown(self):
+        import shutil
+        shutil.rmtree(self.tmp)
+
+    def _run(self, *args):
+        old_argv = sys.argv
+        sys.argv = ["notes"] + list(args)
+        sys.stdout = io.StringIO()
+        sys.stderr = io.StringIO()
+        try:
+            from notes.cli import run_with_store
+            run_with_store(self.store)
+            return sys.stdout.getvalue(), sys.stderr.getvalue()
+        except SystemExit:
+            return sys.stdout.getvalue(), sys.stderr.getvalue()
+        finally:
+            sys.argv = old_argv
+            sys.stdout = sys.__stdout__
+            sys.stderr = sys.__stderr__
+
+    def test_show_existing_note(self):
+        note = self.store.add(Note.from_input("My Title", "My body text"))
+        out, err = self._run("show", note.id)
+        self.assertIn("My Title", out)
+        self.assertIn("My body text", out)
+        self.assertIn(note.id, out)
+
+    def test_show_nonexistent_note(self):
+        out, err = self._run("show", "nonexistent")
+        self.assertIn("not found", err)

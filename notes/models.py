@@ -41,7 +41,7 @@ class Note:
         return cls(
             id=d["id"],
             title=d["title"],
-            body=d.get("body", ""),
+            body=d["body"],
             created_at=d["created_at"],
             updated_at=d["updated_at"],
         )

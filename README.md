@@ -1,5 +1,19 @@
 # notes
 
+## Pi Setup
+
+Install extensions used in this demo:
+
+```bash
+pi install npm:pi-mcp-adapter
+pi install npm:pi-web-access
+pi install npm:pi-caveman
+pi install npm:@tintinweb/pi-subagents
+pi install https://github.com/obra/superpowers
+```
+
+
+
 A production-quality personal notes CLI tool. Store notes in `~/.notes.json`, search by keyword, manage with simple subcommands. Zero external dependencies — stdlib only.
 
 ## Install

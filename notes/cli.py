@@ -42,6 +42,19 @@ def _handle_add(store: NotesStore, args):
     print(f"Added note {note.id}: {note.title}")
 
 
+def _handle_list(store: NotesStore):
+    try:
+        notes = store.list_all()
+    except OSError as e:
+        print(f"Error reading notes file: {e}", file=sys.stderr)
+        sys.exit(2)
+    if not notes:
+        print("No notes.")
+        return
+    for note in reversed(notes):
+        print(f"  [{note.id}]  {note.title}")
+
+
 def main():
     parser = build_parser()
     args = parser.parse_args()

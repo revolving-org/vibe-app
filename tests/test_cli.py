@@ -92,3 +92,48 @@ class TestCLIAdd(unittest.TestCase):
     def test_add_note_whitespace_title(self):
         out, err = self._run("add", "   ")
         self.assertIn("Title must not be empty", err)
+
+
+class TestCLIList(unittest.TestCase):
+    def setUp(self):
+        import tempfile
+        self.tmp = tempfile.mkdtemp()
+        self.filepath = Path(self.tmp) / "notes.json"
+        self.store = NotesStore(filepath=self.filepath)
+
+    def tearDown(self):
+        import shutil
+        shutil.rmtree(self.tmp)
+
+    def _run(self, *args):
+        old_argv = sys.argv
+        sys.argv = ["notes"] + list(args)
+        sys.stdout = io.StringIO()
+        sys.stderr = io.StringIO()
+        try:
+            from notes.cli import run_with_store
+            run_with_store(self.store)
+            return sys.stdout.getvalue(), sys.stderr.getvalue()
+        except SystemExit:
+            return sys.stdout.getvalue(), sys.stderr.getvalue()
+        finally:
+            sys.argv = old_argv
+            sys.stdout = sys.__stdout__
+            sys.stderr = sys.__stderr__
+
+    def test_list_empty(self):
+        out, err = self._run("list")
+        self.assertIn("No notes", out)
+
+    def test_list_with_notes(self):
+        n1 = self.store.add(Note.from_input("First", "Body one"))
+        n2 = self.store.add(Note.from_input("Second", "Body two"))
+        out, err = self._run("list")
+        self.assertIn("First", out)
+        self.assertIn("Second", out)
+        self.assertIn(n1.id, out)
+        self.assertIn(n2.id, out)
+        # Body should not appear in list output
+        self.assertNotIn("Body one", out)
+        # Newest first: n2 was added after n1, so n2 should appear before n1
+        self.assertLess(out.index(n2.id), out.index(n1.id))

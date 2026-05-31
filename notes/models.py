@@ -26,3 +26,9 @@ class Note:
             created_at=now,
             updated_at=now,
         )
+
+    def matches(self, keyword: str) -> bool:
+        if not keyword:
+            return False
+        kw = keyword.lower()
+        return kw in self.title.lower() or kw in self.body.lower()

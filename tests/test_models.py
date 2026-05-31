@@ -44,3 +44,35 @@ class TestNoteFromInput(unittest.TestCase):
         note = Note.from_input("  Hello  ", "  World  ")
         self.assertEqual(note.title, "Hello")
         self.assertEqual(note.body, "World")
+
+
+class TestNoteMatches(unittest.TestCase):
+    def setUp(self):
+        self.note = Note(
+            id="abc123",
+            title="Hello World",
+            body="This is a test note about Python",
+            created_at="2026-01-01T00:00:00+00:00",
+            updated_at="2026-01-01T00:00:00+00:00",
+        )
+
+    def test_matches_title_exact(self):
+        self.assertTrue(self.note.matches("Hello World"))
+
+    def test_matches_title_substring(self):
+        self.assertTrue(self.note.matches("Hello"))
+
+    def test_matches_title_case_insensitive(self):
+        self.assertTrue(self.note.matches("hello"))
+
+    def test_matches_body(self):
+        self.assertTrue(self.note.matches("Python"))
+
+    def test_matches_body_case_insensitive(self):
+        self.assertTrue(self.note.matches("python"))
+
+    def test_no_match(self):
+        self.assertFalse(self.note.matches("zzzzz"))
+
+    def test_matches_empty_keyword_returns_false(self):
+        self.assertFalse(self.note.matches(""))

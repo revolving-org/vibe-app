@@ -176,3 +176,41 @@ class TestCLIShow(unittest.TestCase):
     def test_show_nonexistent_note(self):
         out, err = self._run("show", "nonexistent")
         self.assertIn("not found", err)
+
+
+class TestCLIDelete(unittest.TestCase):
+    def setUp(self):
+        import tempfile
+        self.tmp = tempfile.mkdtemp()
+        self.filepath = Path(self.tmp) / "notes.json"
+        self.store = NotesStore(filepath=self.filepath)
+
+    def tearDown(self):
+        import shutil
+        shutil.rmtree(self.tmp)
+
+    def _run(self, *args):
+        old_argv = sys.argv
+        sys.argv = ["notes"] + list(args)
+        sys.stdout = io.StringIO()
+        sys.stderr = io.StringIO()
+        try:
+            from notes.cli import run_with_store
+            run_with_store(self.store)
+            return sys.stdout.getvalue(), sys.stderr.getvalue()
+        except SystemExit:
+            return sys.stdout.getvalue(), sys.stderr.getvalue()
+        finally:
+            sys.argv = old_argv
+            sys.stdout = sys.__stdout__
+            sys.stderr = sys.__stderr__
+
+    def test_delete_existing_note(self):
+        note = self.store.add(Note.from_input("To Delete"))
+        out, err = self._run("delete", note.id)
+        self.assertIn("Deleted", out)
+        self.assertEqual(len(self.store.list_all()), 0)
+
+    def test_delete_nonexistent_note(self):
+        out, err = self._run("delete", "nonexistent")
+        self.assertIn("not found", err)

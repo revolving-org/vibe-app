@@ -103,5 +103,22 @@ def _handle_show(store: NotesStore, args):
     print(f"  {note.body}")
 
 
+def _handle_delete(store: NotesStore, args):
+    try:
+        note = store.get(args.id)
+    except OSError as e:
+        print(f"Error reading notes file: {e}", file=sys.stderr)
+        sys.exit(2)
+    if note is None:
+        print(f"Note '{args.id}' not found.", file=sys.stderr)
+        sys.exit(1)
+    try:
+        store.delete(args.id)
+    except OSError as e:
+        print(f"Error writing notes file: {e}", file=sys.stderr)
+        sys.exit(2)
+    print(f"Deleted note '{note.title}'.")
+
+
 if __name__ == "__main__":
     main()

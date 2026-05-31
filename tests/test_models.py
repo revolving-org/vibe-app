@@ -76,3 +76,42 @@ class TestNoteMatches(unittest.TestCase):
 
     def test_matches_empty_keyword_returns_false(self):
         self.assertFalse(self.note.matches(""))
+
+
+class TestNoteSerialization(unittest.TestCase):
+    def setUp(self):
+        self.note = Note(
+            id="abc123",
+            title="Hello",
+            body="World",
+            created_at="2026-01-01T00:00:00+00:00",
+            updated_at="2026-01-01T00:00:00+00:00",
+        )
+
+    def test_to_dict(self):
+        d = self.note.to_dict()
+        self.assertEqual(d["id"], "abc123")
+        self.assertEqual(d["title"], "Hello")
+        self.assertEqual(d["body"], "World")
+        self.assertEqual(d["created_at"], "2026-01-01T00:00:00+00:00")
+        self.assertEqual(d["updated_at"], "2026-01-01T00:00:00+00:00")
+
+    def test_from_dict(self):
+        d = {
+            "id": "xyz789",
+            "title": "Test",
+            "body": "Body here",
+            "created_at": "2026-06-01T12:00:00+00:00",
+            "updated_at": "2026-06-01T12:00:00+00:00",
+        }
+        note = Note.from_dict(d)
+        self.assertEqual(note.id, "xyz789")
+        self.assertEqual(note.title, "Test")
+        self.assertEqual(note.body, "Body here")
+        self.assertEqual(note.created_at, "2026-06-01T12:00:00+00:00")
+        self.assertEqual(note.updated_at, "2026-06-01T12:00:00+00:00")
+
+    def test_roundtrip(self):
+        d = self.note.to_dict()
+        note2 = Note.from_dict(d)
+        self.assertEqual(self.note, note2)

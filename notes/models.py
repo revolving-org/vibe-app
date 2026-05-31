@@ -27,6 +27,25 @@ class Note:
             updated_at=now,
         )
 
+    def to_dict(self) -> dict:
+        return {
+            "id": self.id,
+            "title": self.title,
+            "body": self.body,
+            "created_at": self.created_at,
+            "updated_at": self.updated_at,
+        }
+
+    @classmethod
+    def from_dict(cls, d: dict) -> "Note":
+        return cls(
+            id=d["id"],
+            title=d["title"],
+            body=d.get("body", ""),
+            created_at=d["created_at"],
+            updated_at=d["updated_at"],
+        )
+
     def matches(self, keyword: str) -> bool:
         if not keyword:
             return False

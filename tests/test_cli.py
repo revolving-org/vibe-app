@@ -252,3 +252,46 @@ class TestCLIDelete(unittest.TestCase):
     def test_delete_nonexistent_note(self):
         out, err = self._run("delete", "nonexistent")
         self.assertIn("not found", err)
+
+
+class TestCLIAddBodyInput(unittest.TestCase):
+    """Test body input when -b flag is omitted."""
+
+    def setUp(self):
+        import tempfile
+        self.tmp = tempfile.mkdtemp()
+        self.filepath = Path(self.tmp) / "notes.json"
+        self.store = NotesStore(filepath=self.filepath)
+
+    def tearDown(self):
+        import shutil
+        shutil.rmtree(self.tmp)
+
+    def test_add_without_body_flag_uses_editor_or_input(self):
+        # When $EDITOR is unset, falls back to stdin
+        old_argv = sys.argv
+        old_stdin = sys.stdin
+        old_stdout = sys.stdout
+        old_stderr = sys.stderr
+        sys.argv = ["notes", "add", "Test Note"]
+        sys.stdin = io.StringIO("Body from stdin\n")
+        sys.stdout = io.StringIO()
+        sys.stderr = io.StringIO()
+        old_editor = os.environ.pop("EDITOR", None)
+        try:
+            from notes.cli import run_with_store
+            run_with_store(self.store)
+        except SystemExit:
+            pass
+        finally:
+            sys.argv = old_argv
+            sys.stdin = old_stdin
+            sys.stdout = sys.__stdout__
+            sys.stderr = sys.__stderr__
+            if old_editor is not None:
+                os.environ["EDITOR"] = old_editor
+
+        notes = self.store.list_all()
+        self.assertEqual(len(notes), 1)
+        self.assertEqual(notes[0].title, "Test Note")
+        self.assertIn("Body from stdin", notes[0].body)

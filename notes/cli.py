@@ -29,8 +29,31 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def _handle_add(store: NotesStore, args):
+    import os
+    import tempfile
+    import subprocess
+
+    body = args.body
+    if body is None:
+        editor = os.environ.get("EDITOR")
+        if editor:
+            tmpfile = tempfile.NamedTemporaryFile(mode="w+", suffix=".md", delete=False)
+            try:
+                tmpfile.close()
+                subprocess.run([editor, tmpfile.name], check=False)
+                with open(tmpfile.name, "r") as f:
+                    body = f.read().strip()
+            finally:
+                try:
+                    os.unlink(tmpfile.name)
+                except OSError:
+                    pass
+        else:
+            # Fallback: read from stdin
+            body = sys.stdin.read().strip()
+
     try:
-        note = Note.from_input(args.title, args.body or "")
+        note = Note.from_input(args.title, body or "")
     except ValueError as e:
         print(str(e), file=sys.stderr)
         sys.exit(1)

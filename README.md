@@ -93,3 +93,7 @@ Built entirely by [Pi coding agent](https://github.com/earendil-works/pi) using 
 
 `/skill:brainstorming` → `/skill:writing-plans` → `/skill:subagent-driven-development` → `/skill:test-driven-development` → `/skill:verification-before-completion`
 
+
+![Pi Session 1](pi-screenshot-1.png)
+
+![Pi Session 2](pi-screenshot-2.png)

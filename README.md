@@ -81,7 +81,7 @@ notes/
 
 ![Pi Skills Demo](pi-skills-demo-hq.gif)
 
-Built entirely by [Pi coding agent](https://github.com/earendil-works/pi-coding-agent) using superpowers skills.
+Built entirely by [Pi coding agent](https://github.com/earendil-works/pi) using superpowers skills.
 
 ### Session Links
 

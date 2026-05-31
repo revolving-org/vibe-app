@@ -15,9 +15,7 @@ class TestNoteFromInput(unittest.TestCase):
 
     def test_generates_id(self):
         note = Note.from_input("Hello")
-        self.assertTrue(len(note.id) > 0)
-        # UUID4 hex is 32 chars
-        self.assertEqual(len(note.id), 32)
+        self.assertEqual(len(note.id), 32)  # UUID4 hex
 
     def test_generates_unique_ids(self):
         a = Note.from_input("A")
@@ -26,8 +24,9 @@ class TestNoteFromInput(unittest.TestCase):
 
     def test_sets_created_at_and_updated_at(self):
         note = Note.from_input("Hello")
-        self.assertTrue(len(note.created_at) > 0)
-        self.assertTrue(len(note.updated_at) > 0)
+        # ISO8601 with timezone
+        self.assertIn("+", note.created_at)
+        self.assertIn("+", note.updated_at)
 
     def test_created_at_equals_updated_at_for_new_note(self):
         note = Note.from_input("Hello")

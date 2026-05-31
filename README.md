@@ -76,3 +76,20 @@ notes/
 
 - Python 3.10+
 - No external dependencies
+
+## Demo
+
+![Pi Skills Demo](pi-skills-demo-hq.gif)
+
+Built entirely by [Pi coding agent](https://github.com/earendil-works/pi-coding-agent) using superpowers skills.
+
+### Session Links
+
+- [pi.dev session](https://pi.dev/session/#f22fe0090dc260925381504d632f9bb6)
+- [Gist](https://gist.github.com/sagarsrc/f22fe0090dc260925381504d632f9bb6)
+- [Full asciinema recording](pi-skills-demo.cast)
+
+### Skills Showcased
+
+`/skill:brainstorming` → `/skill:writing-plans` → `/skill:subagent-driven-development` → `/skill:test-driven-development` → `/skill:verification-before-completion`
+

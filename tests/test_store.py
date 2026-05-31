@@ -138,3 +138,31 @@ class TestNotesStoreSearch(unittest.TestCase):
     def test_search_empty_keyword(self):
         results = self.store.search("")
         self.assertEqual(results, [])
+
+
+class TestNotesStoreCorruption(unittest.TestCase):
+    def setUp(self):
+        import tempfile
+        self.tmp = tempfile.mkdtemp()
+        self.filepath = Path(self.tmp) / "notes.json"
+        self.store = NotesStore(filepath=self.filepath)
+
+    def tearDown(self):
+        import shutil
+        shutil.rmtree(self.tmp)
+
+    def test_corrupt_json_returns_empty_and_creates_backup(self):
+        # Write invalid JSON
+        self.filepath.write_text("this is not json{{{")
+        notes = self.store.list_all()
+        self.assertEqual(notes, [])
+        backup = self.filepath.with_suffix(".json.bak")
+        self.assertTrue(backup.exists())
+
+    def test_recovery_then_add_works(self):
+        self.filepath.write_text("garbage")
+        self.store.list_all()  # triggers recovery
+        self.store.add(Note.from_input("After recovery"))
+        notes = self.store.list_all()
+        self.assertEqual(len(notes), 1)
+        self.assertEqual(notes[0].title, "After recovery")

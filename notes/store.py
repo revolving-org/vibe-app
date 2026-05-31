@@ -1,0 +1,58 @@
+import json
+import os
+import sys
+from pathlib import Path
+
+from notes.models import Note
+
+
+class NotesStore:
+    def __init__(self, filepath: Path | None = None):
+        if filepath is None:
+            filepath = Path.home() / ".notes.json"
+        self.filepath = filepath
+
+    def _load(self) -> list[Note]:
+        if not self.filepath.exists():
+            return []
+        try:
+            with open(self.filepath, "r") as f:
+                data = json.load(f)
+            notes = []
+            for item in data:
+                try:
+                    notes.append(Note.from_dict(item))
+                except (KeyError, TypeError):
+                    continue
+            return notes
+        except json.JSONDecodeError:
+            self._handle_corruption()
+            return []
+
+    def _handle_corruption(self):
+        backup = self.filepath.with_suffix(".json.bak")
+        try:
+            self.filepath.rename(backup)
+        except OSError:
+            pass
+        print(
+            f"Warning: Corrupt notes file. Backed up to {backup}",
+            file=sys.stderr,
+        )
+
+    def _save(self, notes: list[Note]):
+        data = [note.to_dict() for note in notes]
+        tmp = self.filepath.with_suffix(".json.tmp")
+        self.filepath.parent.mkdir(parents=True, exist_ok=True)
+        with open(tmp, "w") as f:
+            json.dump(data, f, indent=2)
+        os.replace(tmp, self.filepath)
+
+    def add(self, note: Note) -> Note:
+        notes = self._load()
+        notes.append(note)
+        self._save(notes)
+        return note
+
+    def list_all(self) -> list[Note]:
+        return self._load()

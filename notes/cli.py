@@ -120,5 +120,18 @@ def _handle_delete(store: NotesStore, args):
     print(f"Deleted note '{note.title}'.")
 
 
+def _handle_search(store: NotesStore, args):
+    try:
+        results = store.search(args.keyword)
+    except OSError as e:
+        print(f"Error reading notes file: {e}", file=sys.stderr)
+        sys.exit(2)
+    if not results:
+        print(f"No matches for '{args.keyword}'.")
+        return
+    for note in reversed(results):
+        print(f"  [{note.id}]  {note.title}")
+
+
 if __name__ == "__main__":
     main()

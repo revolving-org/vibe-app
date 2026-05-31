@@ -28,7 +28,32 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _handle_add(store: NotesStore, args):
+    try:
+        note = Note.from_input(args.title, args.body or "")
+    except ValueError as e:
+        print(str(e), file=sys.stderr)
+        sys.exit(1)
+    try:
+        store.add(note)
+    except OSError as e:
+        print(f"Error writing notes file: {e}", file=sys.stderr)
+        sys.exit(2)
+    print(f"Added note {note.id}: {note.title}")
+
+
 def main():
+    parser = build_parser()
+    args = parser.parse_args()
+    if args.command is None:
+        parser.print_help()
+        sys.exit(1)
+    store = NotesStore()
+    run_with_store(store)
+
+
+def run_with_store(store: NotesStore):
+    """Entry point that accepts a pre-configured store. Useful for testing."""
     parser = build_parser()
     args = parser.parse_args()
 
@@ -36,18 +61,16 @@ def main():
         parser.print_help()
         sys.exit(1)
 
-    store = NotesStore()
-
-    if args.command == "list":
-        pass
-    elif args.command == "add":
-        pass
+    if args.command == "add":
+        _handle_add(store, args)
+    elif args.command == "list":
+        _handle_list(store)
     elif args.command == "show":
-        pass
+        _handle_show(store, args)
     elif args.command == "delete":
-        pass
+        _handle_delete(store, args)
     elif args.command == "search":
-        pass
+        _handle_search(store, args)
 
 
 if __name__ == "__main__":

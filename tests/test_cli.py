@@ -1,9 +1,12 @@
 import io
+import os
 import sys
 import unittest
 from pathlib import Path
 
-from notes.cli import build_parser
+from notes.cli import build_parser, main, run_with_store
+from notes.store import NotesStore
+from notes.models import Note
 
 
 class TestCLIParser(unittest.TestCase):
@@ -44,3 +47,48 @@ class TestCLIParser(unittest.TestCase):
     def test_no_args_shows_help(self):
         with self.assertRaises(SystemExit):
             self.parser.parse_args([])
+
+
+class TestCLIAdd(unittest.TestCase):
+    def setUp(self):
+        import tempfile
+        self.tmp = tempfile.mkdtemp()
+        self.filepath = Path(self.tmp) / "notes.json"
+        self.store = NotesStore(filepath=self.filepath)
+
+    def tearDown(self):
+        import shutil
+        shutil.rmtree(self.tmp)
+
+    def _run(self, *args):
+        """Run main with given args and custom store, capture stdout/stderr."""
+        old_argv = sys.argv
+        sys.argv = ["notes"] + list(args)
+        sys.stdout = io.StringIO()
+        sys.stderr = io.StringIO()
+        try:
+            run_with_store(self.store)
+            return sys.stdout.getvalue(), sys.stderr.getvalue()
+        except SystemExit:
+            return sys.stdout.getvalue(), sys.stderr.getvalue()
+        finally:
+            sys.argv = old_argv
+            sys.stdout = sys.__stdout__
+            sys.stderr = sys.__stderr__
+
+    def test_add_note(self):
+        out, err = self._run("add", "Hello", "-b", "World")
+        notes = self.store.list_all()
+        self.assertEqual(len(notes), 1)
+        self.assertEqual(notes[0].title, "Hello")
+        self.assertEqual(notes[0].body, "World")
+        self.assertIn("Added note", out)
+
+    def test_add_note_empty_title(self):
+        out, err = self._run("add", "")
+        self.assertIn("Title must not be empty", err)
+        self.assertEqual(len(self.store.list_all()), 0)
+
+    def test_add_note_whitespace_title(self):
+        out, err = self._run("add", "   ")
+        self.assertIn("Title must not be empty", err)

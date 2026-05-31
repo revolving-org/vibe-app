@@ -77,3 +77,7 @@ class NotesStore:
 
     def list_all(self) -> list[Note]:
         return self._load()
+
+    def search(self, keyword: str) -> list[Note]:
+        notes = self._load()
+        return [note for note in notes if note.matches(keyword)]

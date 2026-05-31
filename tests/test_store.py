@@ -101,3 +101,40 @@ class TestNotesStoreGetAndDelete(unittest.TestCase):
         notes = self.store.list_all()
         self.assertEqual(len(notes), 1)
         self.assertEqual(notes[0].id, note2.id)
+
+
+class TestNotesStoreSearch(unittest.TestCase):
+    def setUp(self):
+        import tempfile
+        self.tmp = tempfile.mkdtemp()
+        self.filepath = Path(self.tmp) / "notes.json"
+        self.store = NotesStore(filepath=self.filepath)
+        self.store.add(Note.from_input("Hello World", "About Python"))
+        self.store.add(Note.from_input("Shopping List", "Buy milk and eggs"))
+        self.store.add(Note.from_input("Python Tips", "Use list comprehensions"))
+
+    def tearDown(self):
+        import shutil
+        shutil.rmtree(self.tmp)
+
+    def test_search_finds_title_match(self):
+        results = self.store.search("Hello")
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0].title, "Hello World")
+
+    def test_search_finds_body_match(self):
+        results = self.store.search("milk")
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0].title, "Shopping List")
+
+    def test_search_case_insensitive(self):
+        results = self.store.search("python")
+        self.assertEqual(len(results), 2)
+
+    def test_search_no_match(self):
+        results = self.store.search("zzzzz")
+        self.assertEqual(results, [])
+
+    def test_search_empty_keyword(self):
+        results = self.store.search("")
+        self.assertEqual(results, [])

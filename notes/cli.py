@@ -79,11 +79,6 @@ def _handle_list(store: NotesStore):
 
 
 def main():
-    parser = build_parser()
-    args = parser.parse_args()
-    if args.command is None:
-        parser.print_help()
-        sys.exit(1)
     store = NotesStore()
     run_with_store(store)
 
@@ -92,10 +87,6 @@ def run_with_store(store: NotesStore):
     """Entry point that accepts a pre-configured store. Useful for testing."""
     parser = build_parser()
     args = parser.parse_args()
-
-    if args.command is None:
-        parser.print_help()
-        sys.exit(1)
 
     if args.command == "add":
         _handle_add(store, args)

@@ -54,6 +54,21 @@ class NotesStore:
             except OSError:
                 pass
 
+    def get(self, note_id: str) -> Note | None:
+        notes = self._load()
+        for note in notes:
+            if note.id == note_id:
+                return note
+        return None
+
+    def delete(self, note_id: str) -> bool:
+        notes = self._load()
+        new_notes = [n for n in notes if n.id != note_id]
+        if len(new_notes) == len(notes):
+            return False
+        self._save(new_notes)
+        return True
+
     def add(self, note: Note) -> Note:
         notes = self._load()
         notes.append(note)

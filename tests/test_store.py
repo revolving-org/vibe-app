@@ -60,3 +60,44 @@ class TestNotesStoreAddAndList(unittest.TestCase):
         self.assertIsInstance(data, list)
         self.assertEqual(len(data), 1)
         self.assertEqual(data[0]["title"], "Hello")
+
+
+class TestNotesStoreGetAndDelete(unittest.TestCase):
+    def setUp(self):
+        import tempfile
+        self.tmp = tempfile.mkdtemp()
+        self.filepath = Path(self.tmp) / "notes.json"
+        self.store = NotesStore(filepath=self.filepath)
+        self.note = self.store.add(Note.from_input("Keep me", "Body here"))
+
+    def tearDown(self):
+        import shutil
+        shutil.rmtree(self.tmp)
+
+    def test_get_existing_note(self):
+        found = self.store.get(self.note.id)
+        self.assertIsNotNone(found)
+        self.assertEqual(found.title, "Keep me")
+
+    def test_get_nonexistent_note(self):
+        found = self.store.get("nonexistent-id")
+        self.assertIsNone(found)
+
+    def test_delete_existing_note(self):
+        result = self.store.delete(self.note.id)
+        self.assertTrue(result)
+        notes = self.store.list_all()
+        self.assertEqual(len(notes), 0)
+
+    def test_delete_nonexistent_note(self):
+        result = self.store.delete("nonexistent-id")
+        self.assertFalse(result)
+        notes = self.store.list_all()
+        self.assertEqual(len(notes), 1)
+
+    def test_delete_only_removes_target(self):
+        note2 = self.store.add(Note.from_input("Second"))
+        self.store.delete(self.note.id)
+        notes = self.store.list_all()
+        self.assertEqual(len(notes), 1)
+        self.assertEqual(notes[0].id, note2.id)
